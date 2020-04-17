@@ -40,9 +40,9 @@ World Builder is creating an ecosystem of cryptographic tokens. While "crypto" i
 
 After certification, a person will receive a certain amount of EMR (emergency response) tokens each month. These tokens will be useful for paying for a number of services and purchasing a number of items related to emergency response. Tokens will be distributed based on the level of certification.
 
-Basic: 50 tokens per month
-Intermediate: 2500 tokens per month
-Advanced: 10,000 tokens per month
+- Basic: 50 tokens per month
+- Intermediate: 2500 tokens per month
+- Advanced: 10,000 tokens per month
 
 # Services
 
