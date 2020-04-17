@@ -24,6 +24,14 @@ In order to receive the intermediate certification, individuals will need to com
 
 CPR, emergency medical response, and amateur radio certifications will have to be maintained each year for the certification to remain valid. Continuing education requirements will evaluated biannually.
 
+## Volunteer Work
+
+This is an early draft of the ideas set forth for this project. We are also considering a requirement to actually volunteer a certain number of hours each year. However, we haven't worked out the logistics of such requirements.
+
+### Thought Process
+
+While we fully expect those who have received these certifications to actively help out in a time of need, and there is certainly no free ride because of the amount of involvement in obtaining anything more than the basic certification, the goal is to ensure that we are supporting those who are actively involved in disaster relief.
+
 # Tokenization
 
 World Builder is creating an ecosystem of cryptographic tokens. While "crypto" is a hot buzzword, it offers a lot of potential to monetize activities that are traditionally difficult to monetize, including emergency response. The goal is to create a token that maintains a value of roughly 0.50 USD (2020 PPP).
