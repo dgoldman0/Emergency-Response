@@ -76,11 +76,16 @@ contract ForgableToken is Owned {
   // Forge specific properties that need to be included in the contract
   function forge() external payable returns (bool success) {}
   function maxForge() public view returns (uint256 amount) {}
+  function maxConversionRate() constant returns (uint256 best_price) {}
   function timeToForge(address addr) public view returns (uint256 time) {}
   function forgePrice() public view returns (uint256 price) {}
-  function smithCount() public view returns (uint256 count) {}
-  function smithFee() public view returns (uint256 fee) {}
-  function canSmith() public view returns (bool) {}
+  function smithCount() constant returns (uint256 count) {}
+  function smithFee() constant returns (uint256 fee) {}
+  function canSmith() public view returns (bool able) {}
+  function totalWRLD() constant returns (uint256 wrld) {}
+  function firstMint() constant returns (uint256 date) {}
+  function lastMint() constant returns (uint256 date) {}
+  function paySmithingFee() public payable returns (bool fee) {}
 
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -88,10 +93,8 @@ contract ForgableToken is Owned {
   event NewSmith(address indexed _address, uint _fee);
 }
 
-// Distributor address is TYWMahqqNMEcazVsUCtLTQkLWFSLm6sEda
-
 // Academic Reward Token
-contract ACDToken is ForgableToken {
+contract EMRToken is ForgableToken {
   address creator;
   constructor() {
     totalSupply = 1000000000000; // Start with one million tokens...
@@ -177,6 +180,27 @@ contract ACDToken is ForgableToken {
     lastMint = start;
     return true;
   }
+
+  // Base Minting
+  // While the forge system is open to everyone, and can be used to increase the supply at a cost of WRLD, a supply of tokens will be needed to distribute to our responders.
+  // This function will allow a cetain number of tokens to be minted to fund this effort.
+  uint256 public lastOwnerMint;
+  uint8 public remaining = 24; // Used to decrease the owner mint rate over time, allowing for an initially high rate to fund initial efforts.
+  function ownerMint() isOwner returns (bool success) {
+    uint256 start = now;
+    if (start - lastOwnerMint > 2592000) {
+      lastOwnerMint = start;
+      uint256 amt = (totalSupply * remaining) / 2400;
+      totalSupply += amt;
+      emit Forged(owner, 0, amt);
+      if (remaining > 1) remaining -= 1;
+      balances[owner] += amt;
+      emit Transfer(this, owner, amt);
+      return true;
+    }
+    return false;
+  }
+
   // Get the current conversion rate
   function _calculateCost(uint256 _now) internal returns (uint256) {
     if (firstMint == 0) return maxConversionRate;
