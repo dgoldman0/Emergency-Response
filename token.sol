@@ -32,13 +32,13 @@ contract Owned {
      _;
   }
   // Be careful with this option!
-  function changeOwner(address newOwner) isOwner {
+  function changeOwner(address newOwner) public isOwner {
     lastChangedOwnerAt = now;
     oldOwner = owner;
     owner = newOwner;
   }
   // Allow a revert to old owner ONLY IF it has been less than a day
-  function revertOwner() isOldOwner {
+  function revertOwner() public isOldOwner {
     require(oldOwner != owner);
     require((now - lastChangedOwnerAt) * 1 seconds < 86400);
     owner = oldOwner;
@@ -95,14 +95,12 @@ contract ForgableToken is Owned {
 
 // Health Coin
 contract PHCToken is ForgableToken {
-  address creator;
   constructor() {
     totalSupply = 1000000000000; // Start with one million tokens...
     name = "Public Health Coin";
     symbol = "PHC";
     deciminals = 6;
     sendTo = msg.sender;
-    creator = msg.sender;
     emit Forged(msg.sender, 0, totalSupply);
     emit Transfer(this, msg.sender, totalSupply);
     balances[msg.sender] = totalSupply;
@@ -157,14 +155,17 @@ contract PHCToken is ForgableToken {
   // Tempted to require a minting fee...
   function forge() external payable returns (bool success) {
     // Limit minting rate to the greater of 0.1% of the amount of WRLD frozen so far or 100,000 WRLD
-    require(msg.tokenid == tokenId && (msg.tokenvalue <= 100000000000 || msg.tokenvalue <= totalWRLD / 1000));
-    require(msg.sender == owner || paid[msg.sender]);
+    require(msg.tokenid == tokenId, "Wrong Token");
+    require(msg.tokenvalue <= 100000000000 || msg.tokenvalue <= totalWRLD / 1000), "Maximum WRLD Exceeded");
+    require(msg.sender == owner || paid[msg.sender], "Not a Registered Smith");
+
     // Only let a person mint once per hour
-    require(now - lastMinted[msg.sender] > 3600);
     uint256 start = now;
+    require(start - lastMinted[msg.sender] > 3600, "Too Soon to Forge Again");
 
     // Calculate the amount of token to be minted. Make sure that there's no chance of overflow!
     uint256 amt = msg.tokenvalue / _calculateCost(start);
+
     // Freeze WRLD
     sendTo.transferToken(tokenId, msg.tokenvalue);
 
@@ -186,7 +187,7 @@ contract PHCToken is ForgableToken {
   // This function will allow a cetain number of tokens to be minted to fund this effort.
   uint256 public lastOwnerMint;
   uint8 public remaining = 24; // Used to decrease the owner mint rate over time, allowing for an initially high rate to fund initial efforts.
-  function ownerMint() isOwner returns (bool success) {
+  function ownerMint() public isOwner returns (bool success) {
     uint256 start = now;
     if (start - lastOwnerMint > 2592000) {
       lastOwnerMint = start;
@@ -216,9 +217,8 @@ contract PHCToken is ForgableToken {
     return _calculateCost(now);
   }
   // Allow's the change of the address to which frozen tokens go. Can only be done if sendTo is the default or within the first week after it's changed
-  function changeSendTo(address newAddr) public {
-    // Not sure if I should have sendTo == creator because that allows the creator to reset the sendTo address. Though maybe that's a good thing?
-    require(msg.sender == creator && (sendTo == creator || (now - setAt) < 604800));
+  function changeSendTo(address newAddr) public isOwner {
+    require(sendTo == owner || (now - setAt) < 604800);
     setAt = now;
     sendTo = newAddr;
   }
@@ -228,7 +228,7 @@ contract PHCToken is ForgableToken {
   function canSmith() public view returns (bool) {
     return canSmith(msg.sender);
   }
-  function paySmithingFee() public payable returns (bool success) {
+  function paySmithingFee() external payable returns (bool success) {
     if (paid[msg.sender] || msg.value != smithFee || msg.sender == owner) return false;
     owner.transfer(msg.value);
     // Every ten smiths increases the smith fee by 100 TRX
