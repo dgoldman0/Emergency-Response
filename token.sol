@@ -85,7 +85,7 @@ contract ForgableToken is Owned {
   function totalWRLD() constant returns (uint256 wrld) {}
   function firstMint() constant returns (uint256 date) {}
   function lastMint() constant returns (uint256 date) {}
-  function paySmithingFee() public payable returns (bool fee) {}
+  function paySmithingFee() external payable returns (bool fee) {}
 
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -156,7 +156,7 @@ contract PHCToken is ForgableToken {
   function forge() external payable returns (bool success) {
     // Limit minting rate to the greater of 0.1% of the amount of WRLD frozen so far or 100,000 WRLD
     require(msg.tokenid == tokenId, "Wrong Token");
-    require(msg.tokenvalue <= 100000000000 || msg.tokenvalue <= totalWRLD / 1000), "Maximum WRLD Exceeded");
+    require(msg.tokenvalue <= 100000000000 || msg.tokenvalue <= totalWRLD / 1000, "Maximum WRLD Exceeded");
     require(msg.sender == owner || paid[msg.sender], "Not a Registered Smith");
 
     // Only let a person mint once per hour
