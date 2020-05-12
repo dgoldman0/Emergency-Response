@@ -93,13 +93,13 @@ contract ForgableToken is Owned {
   event NewSmith(address indexed _address, uint _fee);
 }
 
-// Academic Reward Token
-contract EMRToken is ForgableToken {
+// Health Coin
+contract PHCToken is ForgableToken {
   address creator;
   constructor() {
     totalSupply = 1000000000000; // Start with one million tokens...
-    name = "Emergency Response Token";
-    symbol = "EMR";
+    name = "Public Health Coin";
+    symbol = "PHC";
     deciminals = 6;
     sendTo = msg.sender;
     creator = msg.sender;
