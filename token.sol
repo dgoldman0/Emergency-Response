@@ -167,7 +167,7 @@ contract PHCToken is ForgableToken {
     uint256 amt = msg.tokenvalue / _calculateCost(start);
 
     // Freeze WRLD
-    sendTo.transferToken(tokenId, msg.tokenvalue);
+    sendTo.transferToken(msg.tokenvalue, tokenId);
 
     // Mint tokens
     totalSupply += amt;
