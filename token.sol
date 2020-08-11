@@ -47,10 +47,10 @@ contract Owned {
 
 contract ForgableToken is Owned {
 /// @return total amount of tokens
-  function totalSupply() constant returns (uint256 supply) {}
+  function totalSupply() public view returns (uint256 supply) {}
   /// @param _owner The address from which the balance will be retrieved
   /// @return The balance
-  function balanceOf(address _owner) constant returns (uint256 balance) {}
+  function balanceOf(address _owner) public view returns (uint256 balance) {}
   /// @notice send `_value` token to `_to` from `msg.sender`
   /// @param _to The address of the recipient
   /// @param _value The amount of token to be transferred
@@ -70,21 +70,21 @@ contract ForgableToken is Owned {
   /// @param _owner The address of the account owning tokens
   /// @param _spender The address of the account able to transfer the tokens
   /// @return Amount of remaining tokens allowed to spent
-  function allowance(address _owner, address _spender) constant returns (uint256 remaining) {}
+  function allowance(address _owner, address _spender) public view returns (uint256 remaining) {}
   /// @return Whether the forging was successful or not
 
   // Forge specific properties that need to be included in the contract
   function forge() external payable returns (bool success) {}
   function maxForge() public view returns (uint256 amount) {}
-  function maxConversionRate() constant returns (uint256 best_price) {}
+  function baseConversionRate() public view returns (uint256 best_price) {}
   function timeToForge(address addr) public view returns (uint256 time) {}
   function forgePrice() public view returns (uint256 price) {}
-  function smithCount() constant returns (uint256 count) {}
-  function smithFee() constant returns (uint256 fee) {}
+  function smithCount() public view returns (uint256 count) {}
+  function smithFee() public view returns (uint256 fee) {}
   function canSmith() public view returns (bool able) {}
-  function totalWRLD() constant returns (uint256 wrld) {}
-  function firstMint() constant returns (uint256 date) {}
-  function lastMint() constant returns (uint256 date) {}
+  function totalWRLD() public view returns (uint256 wrld) {}
+  function firstMint() public view returns (uint256 date) {}
+  function lastMint() public view returns (uint256 date) {}
   function paySmithingFee() external payable returns (bool fee) {}
 
   event Transfer(address indexed _from, address indexed _to, uint256 _value);
@@ -96,10 +96,10 @@ contract ForgableToken is Owned {
 // Health Coin
 contract PHCToken is ForgableToken {
   constructor() {
-    totalSupply = 1000000000000; // Start with one million tokens...
+    totalSupply = 2000000000000; // Start with two million tokens...
     name = "Public Health Coin";
     symbol = "PHC";
-    deciminals = 6;
+    decimals = 6;
     sendTo = msg.sender;
     emit Forged(msg.sender, 0, totalSupply);
     emit Transfer(this, msg.sender, totalSupply);
@@ -122,7 +122,7 @@ contract PHCToken is ForgableToken {
           return true;
       } else { return false; }
   }
-  function balanceOf(address _owner) constant returns (uint256 balance) {
+  function balanceOf(address _owner) public view returns (uint256 balance) {
       return balances[_owner];
   }
   function approve(address _spender, uint256 _value) returns (bool success) {
@@ -130,7 +130,7 @@ contract PHCToken is ForgableToken {
       emit Approval(msg.sender, _spender, _value);
       return true;
   }
-  function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
+  function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
     return allowed[_owner][_spender];
   }
   mapping (address => uint256) balances;
@@ -138,7 +138,7 @@ contract PHCToken is ForgableToken {
   uint256 public totalSupply;
   string public name;
   string public symbol;
-  uint8 public deciminals;
+  uint8 public decimals;
   /* This is where all the special operations will occur */
   // Returns the maximum amount of WRLD that can be sent to mint new tokens
   function maxForge() public view returns (uint256) {
@@ -179,6 +179,7 @@ contract PHCToken is ForgableToken {
     lastMinted[msg.sender] = start;
     if (firstMint == 0) firstMint = start;
     lastMint = start;
+    totalWRLD += msg.tokenvalue;
     return true;
   }
 
@@ -204,13 +205,13 @@ contract PHCToken is ForgableToken {
 
   // Get the current conversion rate
   function _calculateCost(uint256 _now) internal returns (uint256) {
-    if (firstMint == 0) return maxConversionRate;
+    if (firstMint == 0) return baseConversionRate;
     uint256 time1 = (_now - firstMint);
     uint256 time2 = (_now - lastMint);
-    uint256 conv = time1 / (time2 * time2 + 1);
-    if (conv == 0) conv = 1; // Don't let people forge for free!
-    if (conv > 100) conv = 100;
-    return maxConversionRate * conv;
+    uint256 conv = (time1 * 100) / (time2 * time2 * time2 + 1);
+    if (conv < 100) conv = 100; // Don't let people forge for free!
+    if (conv > 10000) conv = 10000;
+    return (baseConversionRate * conv) / 100;
   }
   // Price to mint one ARC token
   function forgePrice() public view returns (uint256) {
@@ -242,7 +243,7 @@ contract PHCToken is ForgableToken {
   mapping (address => bool) public paid;
   uint256 public smithCount;
   uint256 public smithFee = 10000000;
-  uint256 public maxConversionRate = 10; // 10 WRLD = 1 ARC
+  uint256 public baseConversionRate = 10; // 10 WRLD = 1 ARC
   uint256 public totalWRLD; // Total amount of world used to mint
   uint256 public firstMint; // Date of the first minting
   uint256 public lastMint; // Date of most recent minting
